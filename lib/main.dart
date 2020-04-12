@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
+import 'package:http/http.dart' as http;
 import 'dart:async';
 
 void main() => runApp(MyApp());
@@ -21,8 +22,8 @@ class MyAppHome extends StatefulWidget {
 
 class _MyAppHomeState extends State<MyAppHome> {
   String userName = "";
-  String lorem =
-      "                                                     Lorem Ipsum is simply dummy text of the printing and type setting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+  String hiddenKey = "8AE4C1346A9B2DE8D2FFB1A5E3249682B4527B89295875B38AE4C1346A9B2DE8D2FFB1A5E3249682B4527B89295875B38AE4C1346A9B2DE8D2FFB1A5E3249682B4527B89295875B38AE4C1346A9B2DE8D2FFB1A5E3249682B4527B89295875B38AE4C1346A9B2DE8D2FFB1A5E3249682B4527B89295875B38AE4C1346A9B2DE8D2FFB1A5E3249682B4527B89295875B38AE4C1346A9B2DE8D2FFB1A5E3249682B4527B89295875B3";
+  String lorem ="                             Lorem Ipsum is simply dummy text of the printing and type setting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
           .toLowerCase()
           .replaceAll(',', '')
           .replaceAll('.', '');
@@ -56,7 +57,7 @@ class _MyAppHomeState extends State<MyAppHome> {
   void resetGame() {
     setState(() {
       typedCharsLength = 0;
-      step = 0;
+      step = 1;
     });
   }
 
@@ -66,18 +67,21 @@ class _MyAppHomeState extends State<MyAppHome> {
       step++;
     });
 
-    var timer = Timer.periodic(new Duration(seconds: 1), (timer) {
+    var timer = Timer.periodic(new Duration(seconds: 1), (timer) async {
       // For game over
       int now = new DateTime.now().millisecondsSinceEpoch;
       setState(() {
         if (step == 1 && now - lastTypedAt > 4000) {
-          timer.cancel();
           step++;
         }
-        if (step != 1) {
-          timer.cancel();
-        }
       });
+
+      if (step != 1) {
+        await http.post(
+            'https://flutter-first-app.herokuapp.com/users/score',
+            body: {'key': hiddenKey ,'userName': userName, 'score': typedCharsLength.toString()});
+        timer.cancel();
+      }
     });
   }
 
